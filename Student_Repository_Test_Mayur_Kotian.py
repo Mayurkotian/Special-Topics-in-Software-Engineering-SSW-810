@@ -1,6 +1,6 @@
 """This is a unittest file to test all the cases to check all cases works fine and all the exceptions are caught properly"""
 import unittest
-from HW09_Mayur_Kotian import Repository, Student, Instructor
+from Student_Repository_Mayur_Kotian import Repository, Student, Instructor
 import os, sys
 from prettytable import PrettyTable
 
