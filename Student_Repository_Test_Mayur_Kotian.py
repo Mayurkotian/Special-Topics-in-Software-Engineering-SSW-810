@@ -1,52 +1,65 @@
-"""This is a unittest file to test all the cases to check all cases works fine and all the exceptions are caught properly"""
 import unittest
-from Student_Repository_Mayur_Kotian import Repository, Student, Instructor
-import os, sys
+from Student_Repository_Mayur_Kotian import Repository, Student, Instructor, Major
+from typing import List,Dict
 from prettytable import PrettyTable
+import sqlite3
 
-class Test_HW09(unittest.TestCase):
-    """ TEst_HW09 is to perform all the cases to check if all the errors are handled properly """
+
+class StudentRepositoryTestCase(unittest.TestCase):
+    """This class is used to test all the possible test cases on each class and verifies the test values. """
     def test_class_student(self):
         """ test_class_student is to test if the values provided to the pretty table are correct or not"""
-        stevens: Repository = Repository(r"C:\Users\mayur\Desktop\Stevens\Courses\SEMESTER_2\SSW-810\Assignment_9\Stevens")
+        stevens: Repository = Repository(r"C:\Users\mayur\Desktop\Stevens\Courses\SEMESTER_2\SSW-810\Assignment_11\Stevens")
         list1 = list()
-        list2 = [['10103', 'Baldwin, C', 'SFEN', ['CS 501', 'SSW 564', 'SSW 567', 'SSW 687']], ['10115', 'Wyatt, X', 'SFEN', ['CS 545', 'SSW 564', 'SSW 567', 'SSW 687']], ['10172', 'Forbes, I', 'SFEN', ['SSW 555', 'SSW 567']], ['10175', 'Erickson, D', 'SFEN', ['SSW 564', 'SSW 567', 'SSW 687']], ['10183', 'Chapman, O', 'SFEN', ['SSW 689']], ['11399', 'Cordova, I', 'SYEN', ['SSW 540']], ['11461', 'Wright, U', 'SYEN', ['SYS 611', 'SYS 750', 'SYS 800']], ['11658', 'Kelly, P', 'SYEN', ['SSW 540']], ['11714', 'Morton, A', 'SYEN', ['SYS 611', 'SYS 645']], ['11788', 'Fuller, E', 'SYEN', ['SSW 540']]]
+        list2 = [['10103', 'Jobs, S', 'SFEN', ['CS 501', 'SSW 810'], ['SSW 540', 'SSW 555'], [], '3.38'], ['10115', 'Bezos, J', 'SFEN', ['SSW 810'], ['SSW 540', 'SSW 555'], ['CS 501', 'CS 546'], '4.00'], ['10183', 'Musk, E', 'SFEN', ['SSW 555', 'SSW 810'], ['SSW 540'], ['CS 501', 'CS 546'], '4.00'], ['11714', 'Gates, B', 'CS', ['CS 546', 'CS 570', 'SSW 810'], [], [], '3.50']]
         for stu in stevens._students.values():
             list1.append(stu.info())
-        
+
         self.assertEqual(list1, list2)
 
     def test_class_instructor(self):
-        """ test_class_student is to test if the values provided to the pretty table are correct or not """
-        stevens: Repository = Repository(r"C:\Users\mayur\Desktop\Stevens\Courses\SEMESTER_2\SSW-810\Assignment_9\Stevens")
+        """ test_class_instructor is to test if the values provided to the pretty table are correct or not """
+        stevens: Repository = Repository(r"C:\Users\mayur\Desktop\Stevens\Courses\SEMESTER_2\SSW-810\Assignment_11\Stevens")
         list1 = list()
-        list2 = [['98765', 'Einstein, A', 'SFEN', 'SSW 567', 4], ['98765', 'Einstein, A', 'SFEN', 'SSW 540', 3], ['98764', 'Feynman, R', 'SFEN', 'SSW 564', 3], ['98764', 'Feynman, R', 'SFEN', 'SSW 687', 3], ['98764', 'Feynman, R', 'SFEN', 'CS 501', 1], ['98764', 'Feynman, R', 'SFEN', 'CS 545', 1], ['98763', 'Newton, I', 'SFEN', 'SSW 555', 1], ['98763', 'Newton, I', 'SFEN', 'SSW 689', 1], ['98760', 'Darwin, C', 'SYEN', 'SYS 800', 1], ['98760', 'Darwin, C', 'SYEN', 'SYS 750', 1], ['98760', 'Darwin, C', 'SYEN', 'SYS 611', 2], ['98760', 'Darwin, C', 'SYEN', 'SYS 645', 1]]
+        list2 = [['98764', 'Cohen, R', 'SFEN', 'CS 546', 1], ['98763', 'Rowland, J', 'SFEN', 'SSW 810', 4], ['98763', 'Rowland, J', 'SFEN', 'SSW 555', 1], ['98762', 'Hawking, S', 'CS', 'CS 501', 1], ['98762', 'Hawking, S', 'CS', 'CS 546', 1], ['98762', 'Hawking, S', 'CS', 'CS 570', 1]]
         for instval in stevens._instructors.values():
             for row in instval.info():
                 list1.append(row)
 
         self.assertEqual(list1, list2)
-    
-    def test_file_not_found_error(self) -> None:
-        """To test if any of the file is not correctly found or the path given isn't correct"""
-        with self.assertRaises(FileNotFoundError):
-            Repository(r"C:\Users\mayur\Desktop\Stevens\Courses\SEMESTER_2\SSW-810\Assignment_9\Steven")
 
-    def test_missing_any_value(self) -> None:
-        """To test if there is any missing values in the txt files"""
-        with self.assertRaises(ValueError):
-            Repository(r"C:\Users\mayur\Desktop\Stevens\Courses\SEMESTER_2\SSW-810\Assignment_9\StevensValueerror")
-    
-    def test_wrong_number_of_field(self) -> None:
-        """To test if there is wrong number of field in the file which doesn't match to the field specified"""
-        with self.assertRaises(ValueError):
-            Repository(r"C:\Users\mayur\Desktop\Stevens\Courses\SEMESTER_2\SSW-810\Assignment_9\Stevensfields")
+    def test_class_major(self):
+        """ test_class_major is to test if the values provided to the pretty table are correct or not"""
+        stevens: Repository = Repository(r"C:\Users\mayur\Desktop\Stevens\Courses\SEMESTER_2\SSW-810\Assignment_11\Stevens")
+        list1 = list()
+        list2 = [['SFEN', ['SSW 540', 'SSW 555', 'SSW 810'], ['CS 501', 'CS 546']], ['CS', ['CS 546', 'CS 570'], ['SSW 565', 'SSW 810']]]
+        for stu in stevens._majors.values():
+            list1.append(stu.info())
+                
+        self.assertEqual(list1, list2)
 
-    def test_wrong_grade_value(self) -> None:
-        """To test if there is grade for an unknown student or instructor """
-        with self.assertRaises(ValueError):
-            Repository(r"C:\Users\mayur\Desktop\Stevens\Courses\SEMESTER_2\SSW-810\Assignment_9\Stevenswronggrade")
+    def test_studentdf(self):
+        """ test_studentdf is to test if the values provided to the pretty table are correct or not when retrived from the database. """
+        dblink = "C:/Program Files/JetBrains/DataGrip 2020.1/bin/studentdb.db"
+        db: sqlite3.Connection = sqlite3.connect(dblink)
+        query:str= "select students.Name as Student_Name, students.CWID, grades.Course, grades.Grade, instructors.Name as Instructor_Name from ((students inner join grades on students.CWID = grades.StudentCWID) inner join instructors on grades.InstructorCWID = instructors.CWID) order by Student_Name ASC;"        
+        list1 = list()
+        list2 = [('Bezos, J', '10115', 'SSW 810', 'A', 'Rowland, J'), ('Bezos, J', '10115', 'CS 546', 'F', 'Hawking, S'), ('Gates, B', '11714', 'SSW 810', 'B-', 'Rowland, J'), ('Gates, B', '11714', 'CS 546', 'A', 'Cohen, R'), ('Gates, B', '11714', 'CS 570', 'A-', 'Hawking, S'), ('Jobs, S', '10103', 'SSW 810', 'A-', 'Rowland, J'), ('Jobs, S', '10103', 'CS 501', 'B', 'Hawking, S'), ('Musk, E', '10183', 'SSW 555', 'A', 'Rowland, J'), ('Musk, E', '10183', 'SSW 810', 'A', 'Rowland, J')]
+        for row in db.execute(query):
+            list1.append(row)
+
+        self.assertEqual(list1, list2)
+
+    
 
 if __name__ == '__main__':
     unittest.main(exit=False, verbosity=2)
+            
+
+
+
+
+
+
+
 

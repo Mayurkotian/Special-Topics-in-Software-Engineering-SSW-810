@@ -1,12 +1,13 @@
 """This assignment is about creating a repository for each university storing data about 
 its students ,instructors ,grades and majors by reading four txt files , computing GPA, adding new columns as required and electives 
-and then printing out the pretty table"""
+and then printing out the pretty table. Also using sqlite3 we have retrieve data from studentdatabase and print that through pretty Table"""
 
 from HW08_Mayur_Kotian import file_reader
 from prettytable import PrettyTable
 from typing import Dict, DefaultDict, List
 from collections import defaultdict
 import os
+import sqlite3
 
 class Major: 
     """Major stores major, required ,and electives courses and computes gpa to print it out using pretty table"""
@@ -100,8 +101,9 @@ class Repository:
     """This repository takes in the path of the file and stores all data from the txt files and prints the pretty table. """
 
     def __init__(self, path:str) -> None:
-        """Initializes student , instructor , major dict to create instance for each student, major and instructor to then print it on pretty table for major, students and instructors."""
-    
+        """Initializes student , instructor , major dict to create instance for each student, major and instructor to then print it on pretty table for major, students and instructors.
+        Also taking the dblink retrives data and using student_grade_df it prints out the data with pretty table. """
+        dblink:str = "C:/Program Files/JetBrains/DataGrip 2020.1/bin/studentdb.db"
         self._path:str = path 
         self._students: Dict[str, Student]= dict()              
         self._instructors: Dict[str, Instructor]= dict()   
@@ -115,6 +117,8 @@ class Repository:
         self.major_pretty_table()
         self.student_pretty_table()
         self.instructor_pretty_table()
+        self.student_grade_table_df(dblink)
+
 
     def _read_majors(self) -> None:
         """read_majors read the txt files and using file reader [Major, Flag, Courses]"""
@@ -133,7 +137,7 @@ class Repository:
     def _read_students(self) -> None:
         """read_students reads the txt files and using file reader, the data is fed into student object for every single student"""
         try:
-            for cwid, name, major in file_reader(os.path.join(self._path, 'students.txt'), 3 , sep =';', header = True): 
+            for cwid, name, major in file_reader(os.path.join(self._path, 'students.txt'), 3 , sep ='\t', header = True): 
                 required = self._majors[major].get_required()
                 elective = self._majors[major].get_elective()
                 self._students[cwid] = Student(cwid, name, major, required, elective )
@@ -147,7 +151,7 @@ class Repository:
     def _read_instructors(self) -> None:
         """read_instructor reads the txt files and using file reader, the data is fed into instructor object for every  single instructor """
         try:
-            for instructor_cwid, name, dept in file_reader(os.path.join(self._path, 'instructors.txt'), 3 , sep ='|', header = True): 
+            for instructor_cwid, name, dept in file_reader(os.path.join(self._path, 'instructors.txt'), 3 , sep ='\t', header = True): 
                 self._instructors[instructor_cwid] = Instructor(instructor_cwid, name, dept)
         
         except FileNotFoundError:
@@ -160,7 +164,7 @@ class Repository:
         """read_grades reads the txt files using file reader, and then add grades to student/instructor """
         
         try:
-            for student_cwid, course, grade, instructor_cwid in file_reader(os.path.join(self._path, 'grades.txt'), 4 , sep ='|', header = True):
+            for student_cwid, course, grade, instructor_cwid in file_reader(os.path.join(self._path, 'grades.txt'), 4 , sep ='\t', header = True):
                 if student_cwid in self._students:
                     s: Student = self._students[student_cwid]
                     s.store_course_grade(course, grade)
@@ -180,34 +184,44 @@ class Repository:
             print(ValueError) 
 
     
-    def student_pretty_table(self) -> None:
+    def student_pretty_table(self) -> PrettyTable:
         """student_pretty_table prints a pretty table for students """
-        pt = PrettyTable(field_names = ['CWID', 'Name', 'Major', 'Complete Courses','Remaining Required','Remaining Elective','GPA']) 
+        pt = PrettyTable(field_names = ['Cwid', 'Name', 'Major', 'Completed Courses','Remaining Required','Remaining Elective','GPA']) 
         for stu in self._students.values():
             pt.add_row(stu.info())
 
-        print(pt)
+        return(pt)
 
-    def instructor_pretty_table(self) -> None:
+    def instructor_pretty_table(self) -> PrettyTable:
         """instructor_pretty_table prints a pretty table for instructors """
         pt = PrettyTable(field_names =  ['Cwid', 'Name', 'Dept', 'Course', 'Students'])
         for instval in self._instructors.values():
             for row in instval.info():
                 pt.add_row(row)
         
-        print(pt)
+        return(pt)
 
-    def major_pretty_table(self) -> None:  
+    def major_pretty_table(self) -> PrettyTable:  
         """Major_pretty_table prints a pretty table for user to read information about majors and required courses. """
         pt = PrettyTable(field_names = ['Major', 'Required Courses', 'Electives']) 
         for majorval in self._majors.values():
             pt.add_row(majorval.info())
 
-        print(pt)
+        return(pt)  
 
+    def student_grade_table_df(self, dblink) -> PrettyTable:
+        """Student_pretty_grade_df file uses the dblink to retrive data from the database and then prints it using pretty table. """
+        db: sqlite3.Connection = sqlite3.connect(dblink)
+        query:str= "select students.Name as Student_Name, students.CWID, grades.Course, grades.Grade, instructors.Name as Instructor_Name from ((students inner join grades on students.CWID = grades.StudentCWID) inner join instructors on grades.InstructorCWID = instructors.CWID) order by Student_Name ASC;"
+        pt = PrettyTable(field_names = ["Student's Name", 'Cwid', 'Course', 'Grade', "Instructor's Name"])
+        for row in db.execute(query):
+            pt.add_row(row)
+
+        return(pt)
+        
 def main():
     """Defined all sorts of possible repositories to check the exceptions"""
-    stevens: Repository = Repository(r"C:\Users\mayur\Desktop\Stevens\Courses\SEMESTER_2\SSW-810\Assignment_10\Stevens")
+    # stevens: Repository = Repository(r"C:\Users\mayur\Desktop\Stevens\Courses\SEMESTER_2\SSW-810\Assignment_11\Stevens")
 
 if __name__ == '__main__':
     main()
